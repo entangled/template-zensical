@@ -14,7 +14,7 @@ uv sync
 uv run entangled brei site
 ```
 
-This synchronizes code and Markdown, runs REPL sessions in a Jupyter kernel, and renders the Markdown in `docs` to a website in `site`. Zensical has no plugins, so the [Brei](https://entangled.github.io/brei) workflow in `entangled.toml` first weaves the Markdown into `.entangled/woven`, adding code block titles and REPL output. Edit the pages in `docs`, not the woven ones. `workflow.py` generates a task for each page and REPL session, so only what changed is done again.
+This synchronizes code and Markdown, runs REPL sessions in a Jupyter kernel, and renders the Markdown in `docs` to a website in `site`. Zensical has no plugins, so the [Brei](https://entangled.github.io/brei) workflow in `entangled.toml` first weaves the Markdown into `.entangled/woven`, adding code block titles and REPL output. Edit the pages in `docs`, not the woven ones. The workflow has a task for each page and REPL session, so only what changed is done again.
 
 ## Live preview
 

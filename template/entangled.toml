@@ -11,12 +11,13 @@ kernel = "python3"
 environment = { PYTHONPATH = "src" }
 
 # Build the site with `entangled brei site`. Zensical has no plugins, so we
-# weave the Markdown into `.entangled/woven` first; see `workflow.py`.
-[brei]
-include = [".entangled/site.json"]
+# weave the Markdown into `.entangled/woven` first.
+#
+# Entangled lists the Markdown it reads and the files it writes in
+# `.entangled/filedb.json`, REPL sessions among them. From that we make a
+# list of pages, sessions, their outputs and the tangled code; `splice`
+# creates a task for each page and session.
 
-# Entangled only writes `filedb.json` when pages or code change, so it tells
-# when to generate the workflow again.
 [[brei.task]]
 name = "sync"
 description = "synchronizing code and Markdown"
@@ -24,17 +25,89 @@ creates = [".entangled/filedb.json"]
 force = true
 script = "entangled sync"
 
+[brei.template.list]
+description = "listing ${kind}"
+requires = [".entangled/filedb.json"]
+stdout = "listvar(${kind})"
+runner = "python"
+script = """
+import json
+from pathlib import Path
+
+filedb = json.loads(Path(".entangled/filedb.json").read_text())
+targets = [Path(t) for t in filedb["targets"]]
+
+def is_session(path):
+    try:
+        data = json.loads(path.read_text())
+    except (OSError, ValueError):
+        return False
+    return isinstance(data, dict) and {"config", "commands"} <= data.keys()
+
+sessions = [t for t in targets if t.suffix == ".json" and is_session(t)]
+items = {
+    # Pages relative to `docs`, so we can find their place in `.entangled/woven`.
+    "pages": [Path(f).relative_to("docs") for f in filedb["files"]
+              if Path(f) not in targets and Path(f).suffix == ".md"
+              and Path(f).is_relative_to("docs")],
+    # Sessions without the `.json` extension, so we can name their output.
+    "sessions": [s.with_suffix("") for s in sessions],
+    "outputs": [s.with_suffix(".out.json") for s in sessions],
+    "code": [t for t in targets if t not in sessions],
+}["${kind}"]
+for item in items:
+    print(item.as_posix())
+"""
+
+[[brei.call]]
+template = "list"
+args = { kind = ["pages", "sessions", "outputs", "code"] }
+
+# A session runs again when it or any of the tangled code changes.
+[brei.template.repl]
+description = "running REPL session `${session}.json`"
+requires = ["splice(code)"]
+stdin = "${session}.json"
+stdout = "${session}.out.json"
+script = "repl-session"
+
+[[brei.call]]
+template = "repl"
+collect = "repl"
+args = { session = ["splice(sessions)"] }
+
+[brei.template.weave]
+description = "weaving `docs/${page}`"
+requires = ["docs/${page}", "#static", "splice(outputs)"]
+creates = [".entangled/woven/${page}"]
+script = "entangled weave -f title -f repl -o '.entangled/woven/${page}' 'docs/${page}'"
+
+[[brei.call]]
+template = "weave"
+collect = "woven"
+args = { page = ["splice(pages)"] }
+
+# Mirror the folders in `docs`, and copy other files, like images and scripts.
 [[brei.task]]
 name = "static"
 description = "copying static files"
-requires = ["#sync"]
-script = "python workflow.py static"
+requires = [".entangled/filedb.json"]
+runner = "python"
+script = """
+import shutil
+from pathlib import Path
 
-[[brei.task]]
-description = "generating workflow"
-requires = [".entangled/filedb.json", "workflow.py"]
-stdout = ".entangled/site.json"
-script = "python workflow.py tasks"
+woven = Path(".entangled/woven")
+woven.mkdir(parents=True, exist_ok=True)
+for path in Path("docs").glob("**/*"):
+    target = woven / path.relative_to("docs")
+    if path.is_dir():
+        target.mkdir(parents=True, exist_ok=True)
+    elif path.suffix != ".md" and (
+            not target.exists() or target.stat().st_mtime < path.stat().st_mtime):
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(path, target)
+"""
 
 [[brei.task]]
 name = "site"

@@ -57,8 +57,7 @@ for n, f in enumerate(fibonacci(5)):
 ## Project layout
 
     zensical.toml   # The Zensical configuration file.
-    entangled.toml  # The Entangled configuration file.
-    workflow.py     # Generates the workflow that builds the site.
+    entangled.toml  # The Entangled configuration, and the workflow that builds the site.
     docs/
         index.md    # The documentation homepage.
         ...         # Other markdown pages, images and other files.
