@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+site/
+.cache/
+# Entangled state, woven Markdown and REPL sessions; all regenerated.
+.entangled/

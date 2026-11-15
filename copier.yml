@@ -1,0 +1,33 @@
+_subdirectory: template
+
+_tasks:
+    - "git init"
+    - "uv sync"
+
+_message_after_copy: |
+    Your Entangled project has been generated. Run `uv run build.py` to build
+    the site, or see the README for a live preview.
+
+project_name:
+    type: str
+    help: Project name?
+    default: new-project
+    validator: >-
+        {% if not (project_name | regex_search('^[a-z][a-z0-9\-]+$')) %}
+        project_name must start with a letter, followed one or more letters, digits or dashes all lowercase.
+        {% endif %}
+
+project_title:
+    type: str
+    default: New Project
+    help: Human readable title for your project?
+
+project_author_name:
+    type: str
+    default: John Doe
+    help: Author name?
+
+project_author_email:
+    type: str
+    default: j.doe@yahoo.com
+    help: Author email?

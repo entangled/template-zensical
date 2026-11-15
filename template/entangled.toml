@@ -1,0 +1,11 @@
+version = "2.0"
+watch_list = ["docs/**/*.md"]
+hooks = ["quarto_attributes", "repl"]
+
+# Code blocks with the `repl` class run in a Jupyter kernel. The kernel starts
+# in the project root; `src` is added to the path, so tangled modules can be
+# imported.
+[hook.repl.config.Python]
+backend = "jupyter"
+kernel = "python3"
+environment = { PYTHONPATH = "src" }
