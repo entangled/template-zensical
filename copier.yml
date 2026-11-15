@@ -5,8 +5,8 @@ _tasks:
     - "uv sync"
 
 _message_after_copy: |
-    Your Entangled project has been generated. Run `uv run build.py` to build
-    the site, or see the README for a live preview.
+    Your Entangled project has been generated. Run `uv run entangled brei site`
+    to build the site, or see the README for a live preview.
 
 project_name:
     type: str

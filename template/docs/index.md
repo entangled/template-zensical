@@ -41,8 +41,8 @@ for n, f in enumerate(fibonacci(5)):
 
 ## Commands
 
-* `uv run build.py` - Tangle, run REPL sessions and build the site.
-* `uv run entangled serve --watch docs --build "uv run build.py" site` - Live preview.
+* `uv run entangled brei site` - Tangle, run REPL sessions and build the site.
+* `uv run entangled serve --watch docs --build "entangled brei site" site` - Live preview.
 * `uv run entangled tangle` - Extract source files.
 * `uv run entangled stitch` - Merge changes into markdown.
 * `uv run entangled -h` - Print help message and exit.
@@ -52,12 +52,13 @@ for n, f in enumerate(fibonacci(5)):
 * [Entangled](https://entangled.github.io)
 * [Zensical](https://zensical.org)
 * [REPL sessions](https://entangled.github.io/repl-session)
+* [Brei workflows](https://entangled.github.io/brei)
 
 ## Project layout
 
     zensical.toml   # The Zensical configuration file.
     entangled.toml  # The Entangled configuration file.
-    build.py        # Builds the site.
+    workflow.py     # Generates the workflow that builds the site.
     docs/
         index.md    # The documentation homepage.
         ...         # Other markdown pages, images and other files.

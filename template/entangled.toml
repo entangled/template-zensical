@@ -9,3 +9,35 @@ hooks = ["quarto_attributes", "repl"]
 backend = "jupyter"
 kernel = "python3"
 environment = { PYTHONPATH = "src" }
+
+# Build the site with `entangled brei site`. Zensical has no plugins, so we
+# weave the Markdown into `.entangled/woven` first; see `workflow.py`.
+[brei]
+include = [".entangled/site.json"]
+
+# Entangled only writes `filedb.json` when pages or code change, so it tells
+# when to generate the workflow again.
+[[brei.task]]
+name = "sync"
+description = "synchronizing code and Markdown"
+creates = [".entangled/filedb.json"]
+force = true
+script = "entangled sync"
+
+[[brei.task]]
+name = "static"
+description = "copying static files"
+requires = ["#sync"]
+script = "python workflow.py static"
+
+[[brei.task]]
+description = "generating workflow"
+requires = [".entangled/filedb.json", "workflow.py"]
+stdout = ".entangled/site.json"
+script = "python workflow.py tasks"
+
+[[brei.task]]
+name = "site"
+description = "building the site"
+requires = ["#static", "#woven"]
+script = "zensical build"
